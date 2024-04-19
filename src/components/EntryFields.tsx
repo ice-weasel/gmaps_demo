@@ -1,5 +1,8 @@
 "use client"
+import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/router";
+import Router from "next/router";
 
 export interface LocationData {
     Starting: string;
@@ -13,12 +16,19 @@ export default function LocationEntries() {
         Destination: ''
         });
 
+    const router = Router;
+
     const [routeData,setRouteData] = useState<LocationData | null>(null);
 
     const handleSubmit = async (e:any) => {
       e.preventDefault();
-      
+      console.log("Clicked")
         setRouteData(data);
+        router.push({
+          pathname: '/app/page',
+          query: { starting: data.Starting, destination: data.Destination }
+        });
+        
     }
         
 
@@ -70,13 +80,17 @@ export default function LocationEntries() {
             </div>
             <div></div>
             <div>
-              <button
-                onClick={handleSubmit}
-                className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              >
-                Set Destination
-              </button>
-            </div>
+    <Link href="/Maps"/>
+    
+        <button
+          onClick={handleSubmit}
+          className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+        >
+          Set Destination
+        </button>
+      
+
+  </div>
           </form>
         </div>
       </div>

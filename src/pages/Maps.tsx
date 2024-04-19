@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { DirectionsService, DirectionsRenderer, GoogleMap, LoadScript } from '@react-google-maps/api';
@@ -34,7 +36,7 @@ const DestinationRoutes = () => {
     const { starting, destination } = query;
 
     if (starting && destination) {
-      const response = await fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${starting}&destination=${destination}&key=AIzaSyByiga6RzCCO6wipnXVN_3LJCFmUaxVoPw`);
+      const response = await fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${starting}&destination=${destination}&key=""`);
       const data = await response.json();
       setDirections(data);
     }
@@ -42,7 +44,7 @@ const DestinationRoutes = () => {
 
   return (
     <div>
-      <LoadScript googleMapsApiKey="AIzaSyByiga6RzCCO6wipnXVN_3LJCFmUaxVoPw">
+      <LoadScript googleMapsApiKey="">
         <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={10}>
           {directions && (
             <DirectionsService
