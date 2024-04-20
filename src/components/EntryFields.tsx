@@ -10,6 +10,8 @@ export interface LocationData {
 }
 
 
+
+
 export default function LocationEntries() {
     const [data, setData] = useState<LocationData>({
         Starting: '',
@@ -23,12 +25,7 @@ export default function LocationEntries() {
     const handleSubmit = async (e:any) => {
       e.preventDefault();
       console.log("Clicked")
-        setRouteData(data);
-        router.push({
-          pathname: '/app/page',
-          query: { starting: data.Starting, destination: data.Destination }
-        });
-        
+        setRouteData(data); 
     }
         
 
@@ -80,7 +77,10 @@ export default function LocationEntries() {
             </div>
             <div></div>
             <div>
-    <Link href="/Maps"/>
+    <Link href={{
+      pathname: '/Maps',
+      query: { starting: data.Starting, destination: data.Destination }
+    }}>
     
         <button
           onClick={handleSubmit}
@@ -88,7 +88,7 @@ export default function LocationEntries() {
         >
           Set Destination
         </button>
-      
+        </Link>
 
   </div>
           </form>

@@ -6,7 +6,7 @@ import { DirectionsService, DirectionsRenderer, GoogleMap, LoadScript } from '@r
 
 const containerStyle = {
   width: '100%',
-  height: '400px',
+  height: '75vh',
 };
 
 const center = {
@@ -36,7 +36,7 @@ const DestinationRoutes = () => {
     const { starting, destination } = query;
 
     if (starting && destination) {
-      const response = await fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${starting}&destination=${destination}&key=""`);
+      const response = await fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${starting}&destination=${destination}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`);
       const data = await response.json();
       setDirections(data);
     }
@@ -44,7 +44,7 @@ const DestinationRoutes = () => {
 
   return (
     <div>
-      <LoadScript googleMapsApiKey="">
+      <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string}>
         <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={10}>
           {directions && (
             <DirectionsService
