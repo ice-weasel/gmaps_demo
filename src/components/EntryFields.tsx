@@ -1,8 +1,9 @@
 "use client"
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/router";
-import Router from "next/router";
+
+import { Autocomplete } from "@react-google-maps/api";
+import { useRouter } from "next/navigation";
 
 export interface LocationData {
     Starting: string;
@@ -17,8 +18,12 @@ export default function LocationEntries() {
         Starting: '',
         Destination: ''
         });
-
-    const router = Router;
+        const [locationInput, setLocationInput] = useState({
+          starting: '',
+          destination: ''
+      });
+      
+    const router = useRouter();
 
     const [routeData,setRouteData] = useState<LocationData | null>(null);
 
@@ -46,6 +51,7 @@ export default function LocationEntries() {
                Starting
               </label>
               <div className="mt-2">
+               
                 <input
                   id="name"
                   name="Starting"
@@ -77,18 +83,21 @@ export default function LocationEntries() {
             </div>
             <div></div>
             <div>
-    <Link href={{
-      pathname: '/Maps',
-      query: { starting: data.Starting, destination: data.Destination }
-    }}>
+  
     
         <button
           onClick={handleSubmit}
           className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
         >
-          Set Destination
+            <Link href={{
+      pathname: '/Maps',
+      query: { starting: data.Starting, destination: data.Destination }
+    }}>
+       Set Destination
+    </Link>
+         
         </button>
-        </Link>
+       
 
   </div>
           </form>
