@@ -1,109 +1,160 @@
 "use client"
-import Link from "next/link";
-import { useState } from "react";
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Flex,
+  HStack,
+  IconButton,
+  Input,
+  SkeletonText,
+  Text,
+} from '@chakra-ui/react'
+import { FaLocationArrow, FaTimes } from 'react-icons/fa'
 
-import { Autocomplete } from "@react-google-maps/api";
-import { useRouter } from "next/navigation";
+import {
+  useJsApiLoader,
+  GoogleMap,
+  Marker,
+  Autocomplete,
+  DirectionsRenderer,
+} from '@react-google-maps/api'
+import { useRef, useState } from 'react'
 
-export interface LocationData {
-    Starting: string;
-    Destination: string;        
-}
+const center = { lat: 48.8584, lng: 2.2945 }
 
+function App() {
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
+    libraries: ['places'],
+  })
 
+  const [map, setMap] = useState<google.maps.Map | null>(null)
+  const [directionsResponse, setDirectionsResponse] = useState<google.maps.DirectionsResult | null>(null)
+  const [distance, setDistance] = useState('')
+  const [duration, setDuration] = useState('')
 
+  const originRef = useRef<HTMLInputElement>(null)
+  const destinationRef = useRef<HTMLInputElement>(null)
 
-export default function LocationEntries() {
-    const [data, setData] = useState<LocationData>({
-        Starting: '',
-        Destination: ''
-        });
-        const [locationInput, setLocationInput] = useState({
-          starting: '',
-          destination: ''
-      });
-      
-    const router = useRouter();
+  if (!isLoaded) {
+    return <div>Loading...</div>
+  }
 
-    const [routeData,setRouteData] = useState<LocationData | null>(null);
+  async function calculateRoute() {
+    const origin = originRef.current?.value
+    const destination = destinationRef.current?.value
 
-    const handleSubmit = async (e:any) => {
-      e.preventDefault();
-      console.log("Clicked")
-        setRouteData(data); 
+    if (!origin || !destination) {
+      return
     }
-        
 
-    const onChange = (e:React.ChangeEvent<HTMLInputElement>) : void => {
-        const {name,value} = e.currentTarget;
-        setData({...data,[name]:value});
+    const directionsService = new google.maps.DirectionsService()
+    const results = await directionsService.route({
+      origin,
+      destination,
+      travelMode: google.maps.TravelMode.DRIVING,
+    })
+
+    if (results.routes && results.routes.length > 0 && results.routes[0].legs && results.routes[0].legs.length > 0) {
+      const leg = results.routes[0].legs[0];
+      setDirectionsResponse(results)
+      setDistance(leg.distance?.text || '')
+      setDuration(leg.duration?.text || '')
+    } else {
+      setDirectionsResponse(null)
+      setDistance('')
+      setDuration('')
     }
+  }
 
-    return(
-        <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
-        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6" action="#" method="POST">
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
-               Starting
-              </label>
-              <div className="mt-2">
-               
-                <input
-                  id="name"
-                  name="Starting"
-                  value={data.Starting}
-                  onChange={(e) => onChange(e)}    
-                  required
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
-            </div>
-            <div>
-              <label
-                htmlFor="Destination"
-                className="block text-sm font-medium leading-6 text-gray-900"
-              >
-               Destination
-              </label>
-              <div className="mt-2">
-                <input
-                  id="Destination"
-                  name="Destination"
-                  value={data.Destination}
-                  onChange={(e) => onChange(e)}    
-
-                  required
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                />
-              </div>
-            </div>
-            <div></div>
-            <div>
-  
-    
-        <button
-          onClick={handleSubmit}
-          className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+  function clearRoute() {
+    setDirectionsResponse(null)
+    setDistance('')
+    setDuration('')
+    originRef.current!.value = ''
+    destinationRef.current!.value = ''
+  }
+  return (
+    <Flex
+      position='relative'
+      flexDirection='column'
+      alignItems='center'
+      h='100vh'
+      w='100vw'
+    >
+      <Box position='absolute' left={0} top={0} h='100%' w='100%'>
+        {/* Google Map Box */}
+        <GoogleMap
+          center={center}
+          zoom={15}
+          mapContainerStyle={{ width: '100%', height: '100%' }}
+          options={{
+            zoomControl: false,
+            streetViewControl: false,
+            mapTypeControl: false,
+            fullscreenControl: false,
+          }}
+          onLoad={map => setMap(map || null)}
         >
-            <Link href={{
-      pathname: '/Maps',
-      query: { starting: data.Starting, destination: data.Destination }
-    }}>
-       Set Destination
-    </Link>
-         
-        </button>
-       
+          <Marker position={center} />
+          {directionsResponse && (
+            <DirectionsRenderer directions={directionsResponse} />
+          )}
+        </GoogleMap>
+      </Box>
+      <Box
+        p={4}
+        borderRadius='lg'
+        m={4}
+        bgColor='white'
+        shadow='base'
+        minW='container.md'
+        zIndex='1'
+      >
+        <HStack spacing={2} justifyContent='space-between'>
+          <Box flexGrow={1}>
+            <Autocomplete>
+              <Input type='text' placeholder='Origin' ref={originRef} />
+            </Autocomplete>
+          </Box>
+          <Box flexGrow={1}>
+            <Autocomplete>
+              <Input
+                type='text'
+                placeholder='Destination'
+                ref={destinationRef}
+              />
+            </Autocomplete>
+          </Box>
 
-  </div>
-          </form>
-        </div>
-      </div>
-    ) 
-        
-   
+          <ButtonGroup>
+            <Button colorScheme='pink' type='submit' onClick={calculateRoute}>
+              Calculate Route
+            </Button>
+            <IconButton
+              aria-label='center back'
+              icon={<FaTimes />}
+              onClick={clearRoute}
+            />
+          </ButtonGroup>
+        </HStack>
+        <HStack spacing={4} mt={4} justifyContent='space-between'>
+          <Text>Distance: {distance} </Text>
+          <Text>Duration: {duration} </Text>
+          <IconButton
+            aria-label='center back'
+            icon={<FaLocationArrow />}
+            isRound
+            onClick={() => {
+              map?.panTo(center)
+              map?.setZoom(15)
+            }}
+          />
+        </HStack>
+      </Box>
+    </Flex>
+  )
 }
+
+export default App
